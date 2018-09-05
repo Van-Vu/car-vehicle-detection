@@ -112,6 +112,7 @@ Test Accuracy of SVC =  0.9682
 
 ### Spatial and Historgram features
 I extract spatial feature in function `bin_spatial`
+
 I extract histogram feature in function `color_hist`
 
 Then I combine both features in `extract_spatial_hist_feature` and train them. Below is the result:
@@ -169,14 +170,14 @@ Based on my training result above, these are my final hyperparameters:
 
 ### Sliding Window Search
 
-#### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
+#### 1. Implemented a sliding window search
 
 I decided to detect vehicles in windows at 6 different scales in the bottom half of the image and cut left 250px
 - Total: 341 windows
 
 ![alt text][image4]
 
-#### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
+#### 2. Test images to demonstrate how the pipeline is working
 
 My pipeline finally consists of 6 different window scale within each extracts all features: bin_spatial + color_hist + hog_features
 
