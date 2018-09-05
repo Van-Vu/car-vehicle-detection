@@ -1,17 +1,11 @@
-## Writeup Template
-### You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
-
----
-
 **Vehicle Detection Project**
 
 The goals / steps of this project are the following:
 
 * Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier
-* Optionally, you can also apply a color transform and append binned color features, as well as histograms of color, to your HOG feature vector. 
-* Note: for those first two steps don't forget to normalize your features and randomize a selection for training and testing.
-* Implement a sliding-window technique and use your trained classifier to search for vehicles in images.
-* Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
+* Apply a color transform and append binned color features, as well as histograms of color, to HOG feature vector. 
+* Implement a sliding-window technique and use trained classifier to search for vehicles in images.
+* Run the pipeline on a video stream and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
 * Estimate a bounding box for vehicles detected.
 
 [//]: # (Image References)
@@ -20,11 +14,11 @@ The goals / steps of this project are the following:
 [image3]: ./output_images/noncar_hogfeatures.jpg
 [image4]: ./output_images/sliding_windows.jpg
 [image5]: ./output_images/final1.jpg
-[image6]: ./output_images/final2.png
-[image7]: ./output_images/final3.png
-[image8]: ./output_images/final4.png
+[image6]: ./output_images/final2.jpg
+[image7]: ./output_images/final3.jpg
+[image8]: ./output_images/final4.jpg
 [image9]: ./output_images/final5.jpg
-[image10]: ./output_images/final6.png
+[image10]: ./output_images/final6.jpg
 [video1]: ./project_video_result.mp4
 
 
@@ -53,8 +47,11 @@ I then explored different color spaces and different `skimage.hog()` parameters 
 I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
 
 Here is an example using the `YUV` color space and HOG parameters of `orientations=9`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
+CAR IMAGE
 
 ![alt text][image2]
+
+NON-CAR IMAGE
 
 ![alt text][image3]
 
@@ -64,7 +61,8 @@ I train the classifier in function `train_pipeline`. It uses `LinearSVC` with `S
 
 I tried various combinations of parameters and below is the training result:
 
-`109.43 Seconds to extract hog feature: RGB 9 8 2 ALL
+```python
+109.43 Seconds to extract hog feature: RGB 9 8 2 ALL
 Feature vector length: 5292
 20.51 Seconds to train SVC...
 Test Accuracy of SVC =  0.971
@@ -96,15 +94,17 @@ Using colorspace: YCrCb with these details: 9 8 2 ALL
 109.41 Seconds to extract hog feature
 Feature vector length: 5292
 21.17 Seconds to train SVC...
-Test Accuracy of SVC =  0.9682`
+Test Accuracy of SVC =  0.9682
 
 ### Spatial and Historgram features
 I extract spatial feature in function `bin_spatial`
 I extract histogram feature in function `color_hist`
+```
 
 Then I combine both features in `extract_spatial_hist_feature` and train them. Below is the result:
 
-`Using cspace: RGB with spatial binning of: 16 and 32 histogram bins
+```python
+Using cspace: RGB with spatial binning of: 16 and 32 histogram bins
 9.46 Seconds to extract color feature...
 Feature vector length: 864
 11.76 Seconds to train SVC...
@@ -138,26 +138,26 @@ Using cspace: YCrCb with spatial binning of: 16 and 32 histogram bins
 9.14 Seconds to extract color feature...
 Feature vector length: 864
 5.04 Seconds to train SVC...
-Test Accuracy of SVC =  0.9445`
-
+Test Accuracy of SVC =  0.9445
+```
 
 ### Final hyperparameters:
-color_space = 'YUV' 
-orient = 9
-pix_per_cell = 8
-cell_per_block = 2
-hog_channel = 'ALL'
-spatial_size = 16
-hist_bins = 32
-y_start_stop = [400, 650] # Min and max in y to search in slide_window()
-x_start_stop = [250, 1280] # Min and max in x to search in slide_window()
+color_space = **'YUV'**
+orient = **9**
+pix_per_cell = **8**
+cell_per_block = **2**
+hog_channel = **'ALL'**
+spatial_size = **16**
+hist_bins = **32**
+y_start_stop = **[400, 660]** # Min and max in y to search in slide_window()
+x_start_stop = **[250, 1280]** # Min and max in x to search in slide_window()
 
 ### Sliding Window Search
 
 #### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
 I decided to detect vehicles in windows at 6 different scales in the bottom half of the image and cut left 250px
-Total: 169 windows
+- Total: 169 windows
 
 ![alt text][image4]
 
@@ -183,6 +183,33 @@ windows= windows0 +  windows1  + windows2 + windows3 + windows4 + windows5
 
 I follow the guidance from lecture `Hog Sub-sampling Window Search` to make the pipeline more efficent. The code is in function `find_cars`
 
+function `car_search_pipeline` is where the pipeline gets executed
+
+```python
+def car_search_pipeline(image, heatmap_visualize = True):
+    draw_image = np.copy(image)
+    image = image.astype(np.float32)/255
+
+    scales = [[0.8, 400, 500], [1, 400, 500], [1.25, 400, 600], [1.5, 400, 600], [1.8, 400, 600], [2, 400, 660]]
+    hot_windows = []
+    
+    for scale in scales:
+        bboxes = find_cars(image, scale[1], scale[2], 250, 1280, scale[0], X_scaler = X_scaler, svc = classifier, color_space=color_space, 
+                        spatial_size=spatial_size, hist_bins=hist_bins, 
+                        orient=orient, pix_per_cell=pix_per_cell, 
+                        cell_per_block=cell_per_block, 
+                        hog_channel=hog_channel)
+        if len(bboxes) > 0:
+            for box in bboxes:
+                hot_windows.append(box)
+
+    draw_img, heatmap = apply_heatmap(draw_image,hot_windows,5)
+    
+    if heatmap_visualize:
+        return draw_img, heatmap
+    else:
+        return draw_img
+```
 
 ### Video Implementation
 
