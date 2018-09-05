@@ -274,8 +274,8 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-- I can see the video is not perfect. The bounding box sometimes not tight enough to the vehicle, sometimes it's smaller than the real vehicle
+- Clearly the video is not perfect. The bounding box sometimes not tight enough to the vehicle, sometimes it's smaller than the real vehicle, sometimes it loses track of the car
 - False positives still appear in the final video, this is a sign that I should fine tune the sliding window search algorithm
-- The bounding box is lagging from frame to frame, an improvement is needed to normalize / smooth the bounding box's positions
-- Apply the technique from previous `Advanced Lane Finding` project, once a vehicle is detected, it's likely appears in the surrouding area in the next frame. This will boost the pipeline performance
-
+- The bounding box is lagging from frame to frame, an improvement is needed to normalize / smooth the bounding box's positions & size
+- Apply the technique from previous `Advanced Lane Finding` project, once a vehicle is detected, it's likely appears in the surrouding area in the next frame. This will increase the pipeline performance
+- Accept the challenge (plug lane-finding pipeline) in next revision
