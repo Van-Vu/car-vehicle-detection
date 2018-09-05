@@ -245,6 +245,8 @@ When I run this function for each individual image, I receive below result
 #### 1. Final video output
 Here's a [link to my video result](./project_video_result.mp4)
 
+Or [youtube link](https://youtu.be/vHAwDU-VSzY)
+
 #### 2. Filter for false positives and some method for combining overlapping bounding boxes.
 
 With the above result from running the pipeline, there's a need to **filter false positives**
